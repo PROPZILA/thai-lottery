@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>เลข 3 ตัว ออกอะไรบ่อย?</title>
+<title>รางวัลที่ 1 ออกอะไรบ้าง?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -12,55 +12,57 @@
   body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 "IBM Plex Sans Thai", system-ui, sans-serif; }
   main { max-width:720px; margin:0 auto; padding:24px 16px 64px; }
   h1 { font-size:1.6rem; margin:0 0 4px; }
-  .sub, .note { color:var(--mute); font-size:.9rem; }
+  h2 { font-size:1.1rem; margin:32px 0 8px; }
+  .sub, .note { color:var(--mute); font-size:.9rem; margin:4px 0; }
   .row { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0; }
   button, input { font:inherit; border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:6px 14px; }
+  button { cursor:pointer; }
   button[aria-pressed="true"] { background:var(--ink); color:#fff; border-color:var(--ink); }
-  button:focus-visible, input:focus-visible, .cell:focus-visible { outline:2px solid var(--hit); outline-offset:2px; }
-  .summary { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:8px 0 16px; }
-  .summary div { border:1px solid var(--line); background:#fff; border-radius:10px; padding:12px 14px; }
-  .summary b { display:block; font-size:1.15rem; color:var(--hit); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--hit); outline-offset:2px; }
+  #find { flex:1; min-width:12rem; font-variant-numeric:tabular-nums; letter-spacing:.08em; }
   #detail { min-height:3.2em; border-left:3px solid var(--hit); padding:4px 12px; margin:12px 0; }
-  .grid { display:grid; grid-template-columns:2.6rem repeat(10, 1fr); gap:2px; font-size:.72rem; }
-  .grid .h { color:var(--mute); text-align:center; align-self:center; }
-  .cell { aspect-ratio:1; border-radius:3px; background:#eceef3; border:0; padding:0; cursor:pointer; font-size:.62rem; color:transparent; }
-  .cell[data-n="1"] { background:#b9bbf2; }
-  .cell[data-n="2"] { background:#8387e8; }
-  .cell[data-n="3"] { background:#575be0; }
-  .cell[data-n="4"], .cell[data-n="5"], .cell[data-n="6"] { background:#2c2fa8; }
-  .cell.sel { outline:2px solid var(--ink); }
+  .grid { display:grid; grid-template-columns:2rem repeat(6, 1fr); gap:3px; text-align:center; font-variant-numeric:tabular-nums; }
+  .grid .h { color:var(--mute); font-size:.78rem; align-self:center; }
+  .grid .c { border-radius:4px; padding:6px 0; font-size:.9rem; background:#eceef3; }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  td, th { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--mute); font-weight:400; font-size:.85rem; }
+  td.num { letter-spacing:.1em; font-weight:600; }
 </style>
 </head>
 <body>
 <main>
-  <h1>เลข 3 ตัว ออกอะไรบ่อย?</h1>
+  <h1>รางวัลที่ 1 ออกอะไรบ้าง?</h1>
   <p class="sub" id="range">กำลังโหลด…</p>
 
-  <div class="row" id="kind">
-    <button data-k="front3" aria-pressed="true">เลขหน้า 3 ตัว</button>
-    <button data-k="back3" aria-pressed="false">เลขท้าย 3 ตัว</button>
-  </div>
   <div class="row" id="years">
     <button data-y="5" aria-pressed="false">5 ปี</button>
     <button data-y="10" aria-pressed="false">10 ปี</button>
-    <button data-y="20" aria-pressed="true">ทั้งหมด</button>
-    <input id="find" inputmode="numeric" maxlength="3" placeholder="ค้นหาเลข เช่น 482" aria-label="ค้นหาเลข 3 ตัว">
+    <button data-y="40" aria-pressed="true">ทั้งหมด</button>
   </div>
 
-  <div class="summary">
-    <div>ออกบ่อยสุด<b id="top">-</b></div>
-    <div>ไม่เคยออกเลย<b id="never">-</b></div>
+  <div class="row">
+    <input id="find" inputmode="numeric" maxlength="6" placeholder="ค้นหาเลข 6 หลัก เช่น 482916" aria-label="ค้นหาเลข 6 หลัก">
   </div>
+  <div id="detail" aria-live="polite">พิมพ์เลข 6 หลักเพื่อดูว่าเคยออกรางวัลที่ 1 หรือไม่ (ค้นจากทุกงวดที่มีข้อมูล)</div>
 
-  <div id="detail" aria-live="polite">แตะที่ช่องเพื่อดูวันที่ที่เคยออก</div>
-  <div class="grid" id="grid" role="grid"></div>
+  <h2>เลขที่ออกซ้ำ</h2>
+  <div id="repeats"></div>
+  <p class="note">เลข 6 หลักมี 1,000,000 แบบ แต่ออกแค่งวดละ 1 เลข การออกซ้ำจึงเกิดขึ้นยากมากตามธรรมชาติ</p>
 
-  <p class="note">ตัวเลขหน้าแถวคือเลขตั้งต้นของแถว บวกกับหัวคอลัมน์จะได้เลขของช่องนั้น (เช่น แถว 010 คอลัมน์ +3 = 013) ช่องเข้มคือออกบ่อย
-  หวยแต่ละงวดสุ่มแยกกัน สถิติย้อนหลังไม่ได้ช่วยทำนายงวดถัดไป ใช้ดูเป็นข้อมูลเท่านั้น</p>
+  <h2>จำนวนครั้งของแต่ละตัวเลขในแต่ละหลัก</h2>
+  <div class="grid" id="grid" aria-label="ตารางจำนวนครั้งของตัวเลข 0-9 ในแต่ละหลัก"></div>
+  <p class="note" id="gridnote"></p>
+
+  <h2>ประวัติรางวัลที่ 1</h2>
+  <table><thead><tr><th>วันที่</th><th>เลข</th></tr></thead><tbody id="hist"></tbody></table>
+  <div class="row"><button id="more">ดูทั้งหมด</button></div>
+
+  <p class="note">หวยแต่ละงวดสุ่มแยกกัน สถิติย้อนหลังไม่ได้ช่วยทำนายงวดถัดไป ใช้ดูเป็นข้อมูลเท่านั้น</p>
 </main>
 
 <script>
-const state = { kind: "front3", years: 20, draws: [], hits: {} };
+const state = { years: 40, draws: [], showAll: false };
 const $ = id => document.getElementById(id);
 const fmt = iso => new Date(iso).toLocaleDateString("th-TH", { day:"numeric", month:"short", year:"numeric" });
 
@@ -74,45 +76,50 @@ function render() {
     ? `${fmt(draws[0].date)} – ${fmt(draws.at(-1).date)} รวม ${draws.length} งวด`
     : "ไม่มีข้อมูลในช่วงนี้";
 
-  const hits = {};                       // "482" -> ["2026-10-16", ...]
-  for (const d of draws) for (const n of d[state.kind]) (hits[n] ??= []).push(d.date);
-  state.hits = hits;
+  // เลขที่ออกซ้ำ
+  const byNum = {};
+  for (const d of draws) (byNum[d.first] ??= []).push(d.date);
+  const reps = Object.entries(byNum).filter(([, v]) => v.length > 1).sort((a, b) => b[1].length - a[1].length);
+  $("repeats").innerHTML = reps.length
+    ? "<table><tbody>" + reps.map(([n, v]) =>
+        `<tr><td class="num">${n}</td><td>${v.length} ครั้ง</td><td>${v.map(fmt).join(" · ")}</td></tr>`).join("") + "</tbody></table>"
+    : "<p class='sub'>ยังไม่มีเลขใดออกซ้ำในช่วงนี้</p>";
 
-  const all = Array.from({ length: 1000 }, (_, i) => String(i).padStart(3, "0"));
-  const max = Math.max(0, ...all.map(n => (hits[n] || []).length));
-  const tops = all.filter(n => (hits[n] || []).length === max);
-  $("top").textContent = max ? `${tops.slice(0, 4).join(" · ")}${tops.length > 4 ? ` +${tops.length - 4}` : ""} (${max} ครั้ง)` : "-";
-  $("never").textContent = `${all.filter(n => !hits[n]).length} จาก 1,000 เลข`;
-
-  const g = $("grid");
-  g.innerHTML = "<span></span>" + [...Array(10).keys()].map(c => `<span class="h">+${c}</span>`).join("");
-  for (let r = 0; r < 100; r++) {
-    const rr = String(r).padStart(2, "0");
-    g.insertAdjacentHTML("beforeend", `<span class="h">${rr}0</span>`);
-    for (let c = 0; c < 10; c++) {
-      const n = rr + c, k = (hits[n] || []).length;
-      g.insertAdjacentHTML("beforeend",
-        `<button class="cell" data-num="${n}" data-n="${Math.min(k, 6)}" aria-label="${n} ออก ${k} ครั้ง"></button>`);
+  // จำนวนครั้งของตัวเลข 0-9 ในแต่ละหลัก
+  const counts = Array.from({ length: 6 }, () => Array(10).fill(0));
+  for (const d of draws) [...d.first].forEach((ch, i) => counts[i][+ch]++);
+  const max = Math.max(1, ...counts.flat());
+  let html = "<span></span>" + [1,2,3,4,5,6].map(i => `<span class="h">หลัก ${i}</span>`).join("");
+  for (let dgt = 0; dgt < 10; dgt++) {
+    html += `<span class="h">${dgt}</span>`;
+    for (let p = 0; p < 6; p++) {
+      const c = counts[p][dgt], a = 0.08 + 0.85 * c / max;
+      html += `<span class="c" style="background:rgba(59,63,216,${a.toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}">${c}</span>`;
     }
   }
+  $("grid").innerHTML = html;
+  $("gridnote").textContent = draws.length
+    ? `ถ้าสุ่มสมบูรณ์ แต่ละช่องควรได้ราว ${(draws.length / 10).toFixed(0)} ครั้ง ช่องที่ต่างจากนี้เล็กน้อยเป็นเรื่องปกติ (หลัก 1 คือหลักซ้ายสุด)` : "";
+
+  // ประวัติ
+  const list = draws.slice().reverse();
+  const shown = state.showAll ? list : list.slice(0, 20);
+  $("hist").innerHTML = shown.map(d => `<tr><td>${fmt(d.date)}</td><td class="num">${d.first}</td></tr>`).join("");
+  $("more").hidden = state.showAll || list.length <= 20;
 }
 
-function show(n) {
-  document.querySelectorAll(".cell.sel").forEach(e => e.classList.remove("sel"));
-  document.querySelector(`.cell[data-num="${n}"]`)?.classList.add("sel");
-  const h = state.hits[n] || [];
-  $("detail").innerHTML = `<b>${n}</b> ออก ${h.length} ครั้ง` +
-    (h.length ? `<br>${h.slice().reverse().map(fmt).join(" · ")}` : " (ไม่เคยออกในช่วงนี้)");
-}
-
-$("grid").addEventListener("click", e => e.target.dataset.num && show(e.target.dataset.num));
-$("find").addEventListener("input", e => { const v = e.target.value.replace(/\D/g, ""); e.target.value = v; if (v.length === 3) show(v); });
-document.querySelectorAll("#kind button, #years button").forEach(b => b.addEventListener("click", () => {
-  const group = b.parentElement;
-  group.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
-  if (b.dataset.k) state.kind = b.dataset.k;
-  if (b.dataset.y) state.years = +b.dataset.y;
-  render();
+$("find").addEventListener("input", e => {
+  const v = e.target.value.replace(/\D/g, ""); e.target.value = v;
+  if (v.length < 6) { $("detail").textContent = "พิมพ์เลข 6 หลักเพื่อดูว่าเคยออกรางวัลที่ 1 หรือไม่ (ค้นจากทุกงวดที่มีข้อมูล)"; return; }
+  const hits = state.draws.filter(d => d.first === v).map(d => d.date).reverse();
+  $("detail").innerHTML = hits.length
+    ? `<b>${v}</b> เคยออกรางวัลที่ 1 จำนวน ${hits.length} ครั้ง<br>${hits.map(fmt).join(" · ")}`
+    : `<b>${v}</b> ไม่เคยออกรางวัลที่ 1 ในทุกงวดที่มีข้อมูล`;
+});
+$("more").addEventListener("click", () => { state.showAll = true; render(); });
+document.querySelectorAll("#years button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("#years button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  state.years = +b.dataset.y; render();
 }));
 </script>
 </body>
