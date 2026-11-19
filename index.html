@@ -19,8 +19,12 @@
   button { cursor:pointer; }
   button[aria-pressed="true"] { background:var(--ink); color:#fff; border-color:var(--ink); }
   button:focus-visible, input:focus-visible { outline:2px solid var(--hit); outline-offset:2px; }
-  #find { flex:1; min-width:12rem; font-variant-numeric:tabular-nums; letter-spacing:.08em; }
-  #detail { min-height:3.2em; border-left:3px solid var(--hit); padding:4px 12px; margin:12px 0; }
+  .top { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; text-align:center; }
+  .top div { border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 2px; }
+  .top b { display:block; font-size:1.5rem; color:var(--hit); line-height:1.2; }
+  .top small { color:var(--mute); font-size:.72rem; }
+  .grid .c.max { outline:2px solid var(--ink); outline-offset:-2px; font-weight:600; }
+  .grid .m { font-size:.85rem; padding-top:6px; }
   .grid { display:grid; grid-template-columns:2rem repeat(6, 1fr); gap:3px; text-align:center; font-variant-numeric:tabular-nums; }
   .grid .h { color:var(--mute); font-size:.78rem; align-self:center; }
   .grid .c { border-radius:4px; padding:6px 0; font-size:.9rem; background:#eceef3; }
@@ -41,16 +45,10 @@
     <button data-y="40" aria-pressed="true">ทั้งหมด</button>
   </div>
 
-  <div class="row">
-    <input id="find" inputmode="numeric" maxlength="6" placeholder="ค้นหาเลข 6 หลัก เช่น 482916" aria-label="ค้นหาเลข 6 หลัก">
-  </div>
-  <div id="detail" aria-live="polite">พิมพ์เลข 6 หลักเพื่อดูว่าเคยออกรางวัลที่ 1 หรือไม่ (ค้นจากทุกงวดที่มีข้อมูล)</div>
+  <h2>เลขที่ออกบ่อยที่สุดในแต่ละหลัก</h2>
+  <div class="top" id="top"></div>
 
-  <h2>เลขที่ออกซ้ำ</h2>
-  <div id="repeats"></div>
-  <p class="note">เลข 6 หลักมี 1,000,000 แบบ แต่ออกแค่งวดละ 1 เลข การออกซ้ำจึงเกิดขึ้นยากมากตามธรรมชาติ</p>
-
-  <h2>จำนวนครั้งของแต่ละตัวเลขในแต่ละหลัก</h2>
+  <h2>จำนวนครั้งของตัวเลข 0–9 ในแต่ละหลัก</h2>
   <div class="grid" id="grid" aria-label="ตารางจำนวนครั้งของตัวเลข 0-9 ในแต่ละหลัก"></div>
   <p class="note" id="gridnote"></p>
 
@@ -69,6 +67,18 @@ const fmt = iso => new Date(iso).toLocaleDateString("th-TH", { day:"numeric", mo
 fetch("data/draws.json?v=" + Date.now(), { cache: "no-store" }).then(r => r.json()).then(d => { state.draws = d; render(); })
   .catch(() => { $("range").textContent = "โหลดข้อมูลไม่ได้ ลองรีเฟรชอีกครั้ง"; });
 
+function stats(draws) {
+  const counts = Array.from({ length: 6 }, () => Array(10).fill(0));
+  for (const d of draws) [...d.first].forEach((ch, i) => counts[i][+ch]++);
+  const n = draws.length;
+  const tops = counts.map(col => {
+    const m = Math.max(...col);
+    return { m, digits: col.flatMap((c, dg) => c === m ? [dg] : []) };
+  });
+  const means = counts.map(col => n ? col.reduce((s, c, dg) => s + c * dg, 0) / n : 0);
+  return { counts, tops, means, n };
+}
+
 function render() {
   const cutoff = new Date(); cutoff.setFullYear(cutoff.getFullYear() - state.years);
   const draws = state.draws.filter(d => new Date(d.date) >= cutoff);
@@ -76,46 +86,30 @@ function render() {
     ? `${fmt(draws[0].date)} – ${fmt(draws.at(-1).date)} รวม ${draws.length} งวด`
     : "ไม่มีข้อมูลในช่วงนี้";
 
-  // เลขที่ออกซ้ำ
-  const byNum = {};
-  for (const d of draws) (byNum[d.first] ??= []).push(d.date);
-  const reps = Object.entries(byNum).filter(([, v]) => v.length > 1).sort((a, b) => b[1].length - a[1].length);
-  $("repeats").innerHTML = reps.length
-    ? "<table><tbody>" + reps.map(([n, v]) =>
-        `<tr><td class="num">${n}</td><td>${v.length} ครั้ง</td><td>${v.map(fmt).join(" · ")}</td></tr>`).join("") + "</tbody></table>"
-    : "<p class='sub'>ยังไม่มีเลขใดออกซ้ำในช่วงนี้</p>";
+  const { counts, tops, means, n } = stats(draws);
+  $("top").innerHTML = tops.map((t, i) =>
+    `<div><small>หลัก ${i + 1}</small><b>${n ? t.digits.join("/") : "-"}</b><small>${n ? `${t.m} ครั้ง (${(100 * t.m / n).toFixed(1)}%)` : ""}</small></div>`).join("");
 
-  // จำนวนครั้งของตัวเลข 0-9 ในแต่ละหลัก
-  const counts = Array.from({ length: 6 }, () => Array(10).fill(0));
-  for (const d of draws) [...d.first].forEach((ch, i) => counts[i][+ch]++);
   const max = Math.max(1, ...counts.flat());
   let html = "<span></span>" + [1,2,3,4,5,6].map(i => `<span class="h">หลัก ${i}</span>`).join("");
-  for (let dgt = 0; dgt < 10; dgt++) {
-    html += `<span class="h">${dgt}</span>`;
+  for (let dg = 0; dg < 10; dg++) {
+    html += `<span class="h">${dg}</span>`;
     for (let p = 0; p < 6; p++) {
-      const c = counts[p][dgt], a = 0.08 + 0.85 * c / max;
-      html += `<span class="c" style="background:rgba(59,63,216,${a.toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}">${c}</span>`;
+      const c = counts[p][dg], a = 0.08 + 0.85 * c / max;
+      html += `<span class="c${n && c === tops[p].m ? " max" : ""}" style="background:rgba(59,63,216,${a.toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}">${c}</span>`;
     }
   }
+  html += `<span class="h m">เฉลี่ย</span>` + means.map(m => `<span class="m">${n ? m.toFixed(2) : "-"}</span>`).join("");
   $("grid").innerHTML = html;
-  $("gridnote").textContent = draws.length
-    ? `ถ้าสุ่มสมบูรณ์ แต่ละช่องควรได้ราว ${(draws.length / 10).toFixed(0)} ครั้ง ช่องที่ต่างจากนี้เล็กน้อยเป็นเรื่องปกติ (หลัก 1 คือหลักซ้ายสุด)` : "";
+  $("gridnote").textContent = n
+    ? `หลัก 1 คือหลักซ้ายสุด หลัก 6 คือหลักขวาสุด ช่องที่มีกรอบคือเลขที่ออกบ่อยสุดของหลักนั้น ถ้าสุ่มสมบูรณ์ แต่ละช่องควรได้ราว ${(n / 10).toFixed(0)} ครั้ง และค่าเฉลี่ยควรใกล้ 4.50 ส่วนที่ต่างเล็กน้อยเป็นเรื่องปกติ` : "";
 
-  // ประวัติ
   const list = draws.slice().reverse();
   const shown = state.showAll ? list : list.slice(0, 20);
   $("hist").innerHTML = shown.map(d => `<tr><td>${fmt(d.date)}</td><td class="num">${d.first}</td></tr>`).join("");
   $("more").hidden = state.showAll || list.length <= 20;
 }
 
-$("find").addEventListener("input", e => {
-  const v = e.target.value.replace(/\D/g, ""); e.target.value = v;
-  if (v.length < 6) { $("detail").textContent = "พิมพ์เลข 6 หลักเพื่อดูว่าเคยออกรางวัลที่ 1 หรือไม่ (ค้นจากทุกงวดที่มีข้อมูล)"; return; }
-  const hits = state.draws.filter(d => d.first === v).map(d => d.date).reverse();
-  $("detail").innerHTML = hits.length
-    ? `<b>${v}</b> เคยออกรางวัลที่ 1 จำนวน ${hits.length} ครั้ง<br>${hits.map(fmt).join(" · ")}`
-    : `<b>${v}</b> ไม่เคยออกรางวัลที่ 1 ในทุกงวดที่มีข้อมูล`;
-});
 $("more").addEventListener("click", () => { state.showAll = true; render(); });
 document.querySelectorAll("#years button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("#years button").forEach(x => x.setAttribute("aria-pressed", x === b));
